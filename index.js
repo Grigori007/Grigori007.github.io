@@ -8,6 +8,8 @@ const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' }
 ).addTo(map);
 
-const input = document.getElementById("fileInput");
+//const input = document.getElementById("fileInput");
 
-input.addEventListener("change", (e) => processData(e, map));
+//input.addEventListener("change", (e) => processData(e, map));
+
+processDataFromFile(map);

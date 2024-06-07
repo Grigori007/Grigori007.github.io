@@ -6,7 +6,7 @@ proj4.defs("EPSG:28992","+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888
 // Define WGS84 projection (EPSG:4326)
 proj4.defs("EPSG:4326","+proj=longlat +datum=WGS84 +no_defs");
 
-const targetSheets = [ "Mathane", "Amnonnia", "SO2", "NO2", "CO2" ];
+const targetSheets = [ "Mathane", "Amonnia", "SO2", "NO2", "CO2" ];
 //const targetSheets = [ "Mathane" ];
 
 const NativeNames = {
@@ -32,6 +32,7 @@ function convertExcelToJson(e) {
       .reduce((accumulator, currentSheetName) => {
         const xlRowObject = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[currentSheetName]);
         // const jsonObject = JSON.stringify(xlRowObject);
+        console.log(xlRowObject);
 
         return {
           ...accumulator,
@@ -49,6 +50,11 @@ function convertExcelToJson(e) {
 
     reader.readAsBinaryString(file);
   });
+}
+
+function loadDataFromFile() {
+  const companiesData = data;
+  return companiesData;
 }
 
 function filterCompanies(companies) {

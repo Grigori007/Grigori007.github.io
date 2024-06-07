@@ -1,32 +1,4 @@
-const markerHtmlStyles = `
-  background-color: ${myCustomColour};
-  width: 3rem;
-  height: 3rem;
-  display: block;
-  left: -1.5rem;
-  top: -1.5rem;
-  position: relative;
-  border-radius: 3rem 3rem 0;
-  transform: rotate(45deg);
-  border: 1px solid #FFFFFF`;
-
-
-
 function getMarkerColor(emissionType) {
-    // switch(emissionType) {
-    //     case "Methaan":
-    //         return "methaan";
-    //     case "Ammoniak":
-    //         return "ammoniak";
-    //     case "Zwaveloxiden (als SO2)":
-    //         return "so2";
-    //     case "Stikstofoxiden (als NO2)":
-    //         return "no2";
-    //     case "Koolstofdioxide":
-    //         return "co2";
-    //     default:
-    //         throw new Error("Unsupported emission type");
-    // }
     switch(emissionType) {
         case "Methaan":
             return "#45f542";
@@ -38,6 +10,23 @@ function getMarkerColor(emissionType) {
             return "#42e9f5";
         case "Koolstofdioxide":
             return "#f54242";
+        default:
+            throw new Error("Unsupported emission type");
+    }
+}
+
+function getIconAnchorOffset(emissionType) {
+    switch(emissionType) {
+        case "Methaan":
+            return [0, 0];
+        case "Ammoniak":
+            return [0, 35];
+        case "Zwaveloxiden (als SO2)":
+            return [30, 0];
+        case "Stikstofoxiden (als NO2)":
+            return [30, 35];
+        case "Koolstofdioxide":
+            return [-30, 0];
         default:
             throw new Error("Unsupported emission type");
     }
@@ -58,12 +47,14 @@ function markCompaniesOnMap(companies, map) {
         transform: rotate(45deg);
         border: 1px solid #FFFFFF`;
 
+        const iconAnchorOffset = getIconAnchorOffset(company.emissionType);
+
         const icon = L.divIcon({
-            //class
-            iconAnchor: [0, 24],
+            className: "customIcon",
+            iconAnchor: iconAnchorOffset,
             labelAnchor: [-6, 0],
             popupAnchor: [0, -36],
-            //html: `<span style="${markerHtmlStyles}" />`
+            html: `<span style="${markerHtmlStyles}" />`
         });
 
         L.marker([company.xCoordinate, company.yCoordinate], { title: company.companyName, icon: icon }).addTo(map);
@@ -83,6 +74,19 @@ async function processData(file, map) {
     }
 
     const allCompanies = companiesObject.flat();
-    console.log(allCompanies);
+
     markCompaniesOnMap(allCompanies, map);
 };
+
+function processDataFromFile(map) {
+    const domainCompanyObjects = loadDataFromFile();
+    const companiesObject = [];
+
+    for (const emissionType in domainCompanyObjects) {
+        companiesObject.push(domainCompanyObjects[emissionType]);
+    }
+
+    const allCompanies = companiesObject.flat();
+
+    markCompaniesOnMap(allCompanies, map);
+}

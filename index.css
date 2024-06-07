@@ -34,3 +34,7 @@ html, body {
 .co2 {
     background-color: #f54242;
 }
+
+div.customIcon {
+    display: hidden;
+}
