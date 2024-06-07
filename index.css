@@ -1,0 +1,36 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+#map {
+    width: 1920px;
+    height: 960px;
+}
+
+.leaflet-container {
+    height: 400px;
+    width: 600px;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.methaan {
+    background-color: #45f542;
+}
+
+.ammoniak {
+    background-color: #424bf5;
+}
+
+.so2 {
+    background-color: #ecf542;
+}
+
+.no2 {
+    background-color: #42e9f5;
+}
+
+.co2 {
+    background-color: #f54242;
+}
