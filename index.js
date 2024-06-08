@@ -3,13 +3,20 @@ const RotterdamCoordinates = {
     Longitude: 4.336039
 };
 
-const map = L.map('map').setView([RotterdamCoordinates.Latitude, RotterdamCoordinates.Longitude], 11);
-const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+const map = L.map("map").setView([RotterdamCoordinates.Latitude, RotterdamCoordinates.Longitude], 11);
+const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' }
 ).addTo(map);
 
-//const input = document.getElementById("fileInput");
+const markersLayerGroup = L.layerGroup().addTo(map);
 
-//input.addEventListener("change", (e) => processData(e, map));
+// const input = document.getElementById("fileInput");
 
-processDataFromFile(map);
+// input.addEventListener("change", (e) => processData(e, map, markersLayerGroup));
+
+addUI(map, markersLayerGroup);
+
+initLocalStorage();
+loadControlPanelSettingsFromStorage();
+
+processDataFromFile(markersLayerGroup);

@@ -1,0 +1,2 @@
+const emissionTypes = [ "Methane", "Ammonia", "SO2", "NO2", "CO2" ];
+const sectors = [ "Waste disposal", "Construction", "Chemical industry", "Energy sector", "Trade, services and government", "Other industry", "Refineries", "Sewerage and water treatment plants", "Sector not specified"];

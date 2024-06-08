@@ -1,14 +1,14 @@
 function getMarkerColor(emissionType) {
     switch(emissionType) {
-        case "Methaan":
+        case "Methane":
             return "#45f542";
-        case "Ammoniak":
+        case "Ammonia":
             return "#424bf5";
-        case "Zwaveloxiden (als SO2)":
+        case "SO2":
             return "#ecf542";
-        case "Stikstofoxiden (als NO2)":
+        case "NO2":
             return "#42e9f5";
-        case "Koolstofdioxide":
+        case "CO2":
             return "#f54242";
         default:
             throw new Error("Unsupported emission type");
@@ -17,22 +17,22 @@ function getMarkerColor(emissionType) {
 
 function getIconAnchorOffset(emissionType) {
     switch(emissionType) {
-        case "Methaan":
+        case "Methane":
             return [0, 0];
-        case "Ammoniak":
+        case "Ammonia":
             return [0, 35];
-        case "Zwaveloxiden (als SO2)":
+        case "SO2":
             return [30, 0];
-        case "Stikstofoxiden (als NO2)":
+        case "NO2":
             return [30, 35];
-        case "Koolstofdioxide":
+        case "CO2":
             return [-30, 0];
         default:
             throw new Error("Unsupported emission type");
     }
 }
 
-function markCompaniesOnMap(companies, map) {
+function markCompaniesOnMap(companies, markersLayerGroup) {
     companies.forEach(company => {
         const markerColor = getMarkerColor(company.emissionType);
 
@@ -57,11 +57,17 @@ function markCompaniesOnMap(companies, map) {
             html: `<span style="${markerHtmlStyles}" />`
         });
 
-        L.marker([company.xCoordinate, company.yCoordinate], { title: company.companyName, icon: icon }).addTo(map);
+        L.marker([company.xCoordinate, company.yCoordinate], { title: `${company.companyName} - ${company.emissionType}`, icon: icon }).addTo(markersLayerGroup);
     });
 }
 
-async function processData(file, map) {
+function filterCompaniesByEmissionAndSector(allCompanies) {
+    const { emissionTypesToDisplay, sectorsToDisplay } = getEmissionsAndSectorsToDisplayFromStorage();
+    console.log(emissionTypesToDisplay, sectorsToDisplay)
+    return allCompanies.filter(company => emissionTypesToDisplay.includes(company.emissionType) && sectorsToDisplay.includes(company.sector));
+}
+
+async function processData(file, markersLayerGroup) {
     const companiesObjectsFromExcelFile = await convertExcelToJson(file);
     const uniqueCompaniesObjects = filterCompanies(companiesObjectsFromExcelFile);
     const domainCompanyObjects = mapToDomainObject(uniqueCompaniesObjects);
@@ -74,11 +80,12 @@ async function processData(file, map) {
     }
 
     const allCompanies = companiesObject.flat();
+    const companiesToDisplay = filterCompaniesByEmissionAndSector(allCompanies);
 
-    markCompaniesOnMap(allCompanies, map);
+    markCompaniesOnMap(companiesToDisplay, markersLayerGroup);
 };
 
-function processDataFromFile(map) {
+function processDataFromFile(markersLayerGroup) {
     const domainCompanyObjects = loadDataFromFile();
     const companiesObject = [];
 
@@ -87,6 +94,110 @@ function processDataFromFile(map) {
     }
 
     const allCompanies = companiesObject.flat();
+    const companiesToDisplay = filterCompaniesByEmissionAndSector(allCompanies);
 
-    markCompaniesOnMap(allCompanies, map);
+    markCompaniesOnMap(companiesToDisplay, markersLayerGroup);
+}
+
+function rerenderMarkers(map, markersLayerGroup) {
+    map.eachLayer((layer) => {
+        if (layer['_latlng'] != undefined) {
+            layer.remove();
+        }
+    });
+
+    processDataFromFile(map, markersLayerGroup);
+}
+
+function resetMap(map, markersLayerGroup) {
+    resetLocalStorage();
+    loadControlPanelSettingsFromStorage();
+    rerenderMarkers(map, markersLayerGroup);
+}
+
+function renderCheckbox(name, shouldAddColor = false) {
+    const checkboxContainer = L.DomUtil.create("div");
+    checkboxContainer.className = "checkbox-container";
+
+    const input = L.DomUtil.create("input");
+    const label = L.DomUtil.create("label");
+
+    input.type = "checkbox";
+    input.name = name;
+    input.value = name;
+    input.className = "controlPanelCheckbox";
+    input.onchange = onCheckboxClick;
+
+    label.htmlFor = name;
+    label.innerHTML = name;
+    label.className = "controlPanelCheckboxLabel";
+
+    checkboxContainer.appendChild(input);
+    checkboxContainer.appendChild(label);
+
+    if (shouldAddColor) {
+        const colorMarker = L.DomUtil.create("div");
+        colorMarker.className = "emission-type-color-marker";
+        colorMarker.style.backgroundColor = getMarkerColor(name);
+        checkboxContainer.appendChild(colorMarker);
+    }
+
+    return checkboxContainer;
+}
+
+function addUI(map, markersLayerGroup) {
+    L.Control.CustomMapControlPanel = L.Control.extend({
+        onAdd: function(_) {
+            const div = L.DomUtil.create("div");
+            div.id = "controller";
+
+            const emissionTypesTitle = L.DomUtil.create("h3");
+            emissionTypesTitle.innerHTML = "Emission types";
+            emissionTypesTitle.className = "top-title";
+            div.appendChild(emissionTypesTitle);
+
+            emissionTypes.forEach(emissionType => {
+                const checkbox = renderCheckbox(emissionType, true);
+                div.appendChild(checkbox);
+            });
+
+            const sectorsTitle = L.DomUtil.create("h3");
+            sectorsTitle.innerHTML = "Sectors";
+            div.appendChild(sectorsTitle);
+
+            sectors.forEach(emissionType => {
+                const checkbox = renderCheckbox(emissionType);
+                div.appendChild(checkbox);
+            });
+
+            const buttonPanel = L.DomUtil.create("div");
+            buttonPanel.className = "button-panel";
+
+            const applyFilterButton = L.DomUtil.create("button");
+            applyFilterButton.className = "filter-button";
+            applyFilterButton.innerText = "Apply";
+            applyFilterButton.onclick = (e) => rerenderMarkers(map, markersLayerGroup);
+
+            const resetFilterButton = L.DomUtil.create("button");
+            resetFilterButton.className = "filter-button";
+            resetFilterButton.innerText = "Reset";
+            resetFilterButton.onclick = (e) => resetMap(map, markersLayerGroup);
+
+            buttonPanel.appendChild(applyFilterButton);
+            buttonPanel.appendChild(resetFilterButton);
+
+            div.appendChild(buttonPanel);
+
+            return div;
+        },
+        onRemove: function(_) {
+
+        }
+    });
+
+    L.control.customMapControlPanel = function(opts) {
+        return new L.Control.CustomMapControlPanel(opts);
+    }
+
+    L.control.customMapControlPanel({ position: "topright" }).addTo(map);
 }
