@@ -1,2 +1,3 @@
 const emissionTypes = [ "Methane", "Ammonia", "SO2", "NO2", "CO2" ];
-const sectors = [ "Waste disposal", "Construction", "Chemical industry", "Energy sector", "Trade, services and government", "Other industry", "Refineries", "Sewerage and water treatment plants", "Sector not specified"];
+const sectors = [ "Waste disposal", "Construction", "Chemical industry", "Energy sector", "Trade, services and government", "Other industry", "Refineries", /*"Sewerage and water treatment plants",*/ "Sector not specified"];
+const years = [ 1995, 2000, 2005, 2010, 2015, 2019, 2020, 2021 ];

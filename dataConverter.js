@@ -14,7 +14,16 @@ const NativeNames = {
   YCoordinate: "Ycoord",
   EmissionType: "Stof",
   IsInPort: "IsInPort",
-  Sector: "Sector"
+  Sector: "Sector",
+  Year1990: "Jaar_1990",
+  Year1995: "Jaar_1995",
+  Year2000: "Jaar_2000",
+  Year2005: "Jaar_2005",
+  Year2010: "Jaar_2010",
+  Year2015: "Jaar_2015",
+  Year2019: "Jaar_2019",
+  Year2020: "Jaar_2020",
+  Year2021: "Jaar_2021"
 };
 
 function convertExcelToJson(e) {
@@ -27,16 +36,16 @@ function convertExcelToJson(e) {
       const binaryData = event.target.result;
       const workbook = XLSX.read(binaryData, { type: "binary" });
 
-    const companiesData = workbook.SheetNames
-      .filter(sheetName => targetSheets.includes(sheetName))
-      .reduce((accumulator, currentSheetName) => {
-        const xlRowObject = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[currentSheetName]);
+      const companiesData = workbook.SheetNames
+        .filter(sheetName => targetSheets.includes(sheetName))
+        .reduce((accumulator, currentSheetName) => {
+          const xlRowObject = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[currentSheetName]);
 
-        return {
-          ...accumulator,
-          [currentSheetName]: xlRowObject
-        };
-      }, {});
+          return {
+            ...accumulator,
+            [currentSheetName]: xlRowObject
+          };
+        }, {});
 
       resolve(companiesData);
     };
@@ -129,6 +138,15 @@ function mapToDomainObject(companies) {
       yCoordinate: companyObject[NativeNames.YCoordinate],
       sector: translateSector(companyObject[NativeNames.Sector]),
       emissionType: translateEmissionType(companyObject[NativeNames.EmissionType]),
+      emission1990: companyObject[NativeNames.Year1990],
+      emission1995: companyObject[NativeNames.Year1995],
+      emission2000: companyObject[NativeNames.Year2000],
+      emission2005: companyObject[NativeNames.Year2005],
+      emission2010: companyObject[NativeNames.Year2010],
+      emission2015: companyObject[NativeNames.Year2015],
+      emission2019: companyObject[NativeNames.Year2019],
+      emission2020: companyObject[NativeNames.Year2020],
+      emission2021: companyObject[NativeNames.Year2021],
     }));
   }
 

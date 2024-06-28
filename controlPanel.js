@@ -1,5 +1,5 @@
 function initLocalStorage() {
-    [...emissionTypes, ...sectors].forEach(key => {
+    [...emissionTypes, ...sectors, ...years].forEach(key => {
         if (localStorage.getItem(key) === null) {
             localStorage.setItem(key, true);
         }
@@ -7,11 +7,11 @@ function initLocalStorage() {
 }
 
 function resetLocalStorage() {
-    [...emissionTypes, ...sectors].forEach(key => localStorage.setItem(key, true));
+    [...emissionTypes, ...sectors, ...years].forEach(key => localStorage.setItem(key, true));
 }
 
 function loadControlPanelSettingsFromStorage() {
-    [...emissionTypes, ...sectors].forEach(key => {
+    [...emissionTypes, ...sectors, ...years].forEach(key => {
         const value = localStorage.getItem(key);
 
         if (value !== null) {
@@ -22,7 +22,7 @@ function loadControlPanelSettingsFromStorage() {
     });
 }
 
-function getEmissionsAndSectorsToDisplayFromStorage() {
+function getEmissionsSectorsYearsToDisplayFromStorage() {
     const emissionTypesToDisplay = emissionTypes
         .map(emissionType => localStorage.getItem(emissionType) === "true" ? emissionType : null)
         .filter(emissionType => !!emissionType);
@@ -31,7 +31,11 @@ function getEmissionsAndSectorsToDisplayFromStorage() {
         .map(sector => localStorage.getItem(sector) === "true" ? sector : null)
         .filter(sector => !!sector);
 
-    return { emissionTypesToDisplay, sectorsToDisplay };
+    const yearsToDisplay = years
+        .map(year => localStorage.getItem(year) === "true" ? year : null)
+        .filter(year => !!year);
+
+    return { emissionTypesToDisplay, sectorsToDisplay, yearsToDisplay };
 }
 
 function onCheckboxClick(e) {

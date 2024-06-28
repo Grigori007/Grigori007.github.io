@@ -61,10 +61,12 @@ function markCompaniesOnMap(companies, markersLayerGroup) {
     });
 }
 
-function filterCompaniesByEmissionAndSector(allCompanies) {
-    const { emissionTypesToDisplay, sectorsToDisplay } = getEmissionsAndSectorsToDisplayFromStorage();
-    console.log(emissionTypesToDisplay, sectorsToDisplay)
-    return allCompanies.filter(company => emissionTypesToDisplay.includes(company.emissionType) && sectorsToDisplay.includes(company.sector));
+function filterCompaniesByEmissionSectorAndYear(allCompanies) {
+    const { emissionTypesToDisplay, sectorsToDisplay, yearsToDisplay } = getEmissionsSectorsYearsToDisplayFromStorage();
+    const companiesFilteredByEmissionAndSector = allCompanies.filter(company => emissionTypesToDisplay.includes(company.emissionType) && sectorsToDisplay.includes(company.sector))
+    const companiesFilteredByYear = companiesFilteredByEmissionAndSector.filter(company => yearsToDisplay.some(year => !!company[`emission${year}`]));
+
+    return companiesFilteredByYear;
 }
 
 async function processData(file, markersLayerGroup) {
@@ -78,23 +80,17 @@ async function processData(file, markersLayerGroup) {
     for (const emissionType in domainCompanyObjects) {
         companiesObject.push(domainCompanyObjects[emissionType]);
     }
-
+    
     const allCompanies = companiesObject.flat();
-    const companiesToDisplay = filterCompaniesByEmissionAndSector(allCompanies);
+    
+    const companiesToDisplay = filterCompaniesByEmissionSectorAndYear(allCompanies);
 
     markCompaniesOnMap(companiesToDisplay, markersLayerGroup);
 };
 
 function processDataFromFile(markersLayerGroup) {
-    const domainCompanyObjects = loadDataFromFile();
-    const companiesObject = [];
-
-    for (const emissionType in domainCompanyObjects) {
-        companiesObject.push(domainCompanyObjects[emissionType]);
-    }
-
-    const allCompanies = companiesObject.flat();
-    const companiesToDisplay = filterCompaniesByEmissionAndSector(allCompanies);
+    const allCompanies = loadDataFromFile();
+    const companiesToDisplay = filterCompaniesByEmissionSectorAndYear(allCompanies);
 
     markCompaniesOnMap(companiesToDisplay, markersLayerGroup);
 }
@@ -165,8 +161,17 @@ function addUI(map, markersLayerGroup) {
             sectorsTitle.innerHTML = "Sectors";
             div.appendChild(sectorsTitle);
 
-            sectors.forEach(emissionType => {
-                const checkbox = renderCheckbox(emissionType);
+            sectors.forEach(sector => {
+                const checkbox = renderCheckbox(sector);
+                div.appendChild(checkbox);
+            });
+
+            const yearsTitle = L.DomUtil.create("h3");
+            yearsTitle.innerHTML = "Emissions from years";
+            div.appendChild(yearsTitle);
+
+            years.forEach(year => {
+                const checkbox = renderCheckbox(year);
                 div.appendChild(checkbox);
             });
 
@@ -190,9 +195,7 @@ function addUI(map, markersLayerGroup) {
 
             return div;
         },
-        onRemove: function(_) {
-
-        }
+        onRemove: function(_) {}
     });
 
     L.control.customMapControlPanel = function(opts) {
