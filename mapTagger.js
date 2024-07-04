@@ -6,12 +6,16 @@ function getMarkerColor(emissionType) {
             return "#424bf5";
         case "SO2":
             return "#ecf542";
-        case "NO2":
+        case "NOX":
             return "#42e9f5";
         case "CO2":
             return "#f54242";
+        case "PM2,5":
+            return "#6f7571";
+        case "PM10":
+            return "#000000";
         default:
-            throw new Error("Unsupported emission type");
+            throw new Error(`Unsupported emission type: ${emissionType}`);
     }
 }
 
@@ -23,12 +27,16 @@ function getIconAnchorOffset(emissionType) {
             return [0, 35];
         case "SO2":
             return [30, 0];
-        case "NO2":
+        case "NOX":
             return [30, 35];
         case "CO2":
             return [-30, 0];
+        case "PM2,5":
+            return [0, -35];
+        case "PM10":
+            return [-30, -35];
         default:
-            throw new Error("Unsupported emission type");
+            throw new Error(`Unsupported emission type: ${emissionType}`);
     }
 }
 
@@ -82,7 +90,7 @@ async function processData(file, markersLayerGroup) {
     }
     
     const allCompanies = companiesObject.flat();
-    
+    //console.log(allCompanies);
     const companiesToDisplay = filterCompaniesByEmissionSectorAndYear(allCompanies);
 
     markCompaniesOnMap(companiesToDisplay, markersLayerGroup);

@@ -6,7 +6,7 @@ proj4.defs("EPSG:28992","+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888
 // Define WGS84 projection (EPSG:4326)
 proj4.defs("EPSG:4326","+proj=longlat +datum=WGS84 +no_defs");
 
-const targetSheets = [ "Mathane", "Amonnia", "SO2", "NO2", "CO2" ];
+const targetSheets = [ "Mathane", "Amonnia", "SO2", "NOX", "CO2", "PM2.5", "PM10" ];
 
 const NativeNames = {
   CompanyName: "Bedrijf",
@@ -107,7 +107,7 @@ function translateSector(nativeSectorName) {
     case "":
       return "Sector not specified";
     default:
-      throw new Error("Unsupported sector name");
+      throw new Error(`Unsupported sector name: ${nameToTranslate}`);
   }
 }
 
@@ -122,11 +122,15 @@ function translateEmissionType(nativeEmissionType) {
     case "zwaveloxiden (als so2)":
       return "SO2";
     case "stikstofoxiden (als no2)":
-      return "NO2";
+      return "NOX";
     case "koolstofdioxide":
       return "CO2";
+    case "fijnstof (pm2,5)":
+      return "PM2,5";
+    case "fijnstof (pm10)":
+      return "PM10";
     default:
-      throw new Error("Unsupported emission type");
+      throw new Error(`Unsupported emission type: ${nameToTranslate}`);
   }
 }
 
