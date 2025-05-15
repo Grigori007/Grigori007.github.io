@@ -50,5 +50,4 @@ function animation( time ) {
 	// mesh.rotation.y = time / 1000;
 
 	renderer.render( scene, camera );
-
 }
