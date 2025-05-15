@@ -40,8 +40,6 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animation );
 document.body.appendChild( renderer.domElement );
 
-// animation
-
 function animation( time ) {
 	if (loadedModel) {
 		loadedModel.rotation.x = time / 2000;
