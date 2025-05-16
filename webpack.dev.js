@@ -7,6 +7,7 @@ module.exports = merge(common, {
     output: {
         filename: "main.js",
         assetModuleFilename: 'assets/[name].[ext]',
-        path: path.resolve(__dirname, "dist")
+        path: path.resolve(__dirname, "dist"),
+        publicPath: '/'
     },
 });
