@@ -11,7 +11,19 @@ module.exports = {
             },
             {
                 test: /\.3ds$/,
-                type: 'asset/resource', // this emits the file and gives you the URL
+                type: 'asset/resource',
+            },
+            {
+                test: /\.glb$/,
+                type: 'asset/resource',
+            },
+            {
+                test: /\.hdr$/,
+                type: 'asset/resource',
+            },
+            {
+                test: /\.exr$/,
+                type: 'asset/resource',
             }
         ],
     },
