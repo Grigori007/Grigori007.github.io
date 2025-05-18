@@ -16,7 +16,7 @@ import hdrPath1 from "./assets/qwantani_moonrise_4k.hdr";
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x222222);
 
-const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
 camera.position.x = -3;
 camera.position.y = 2.2;
 camera.position.z = -2.8;
@@ -49,15 +49,15 @@ new RGBELoader()
 document.body.appendChild(renderer.domElement);
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-scene.add(ambientLight);
+// const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+// scene.add(ambientLight);
 
 // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
 // scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-dirLight.position.set(10, 10, 10);
-scene.add(dirLight);
+// const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+// dirLight.position.set(10, 10, 10);
+// scene.add(dirLight);
 
 //const tdsLoader = new TDSLoader();
 
