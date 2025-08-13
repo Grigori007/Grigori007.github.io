@@ -1,124 +1,106 @@
 import * as THREE from 'three';
-//import { TDSLoader } from 'three/examples/jsm/loaders/TDSLoader.js';
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import bossaAnimacjaModelPath from "./assets/BOSSA_ANIMACJA.glb";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { PMREMGenerator } from 'three';
-import "./css/index.css";
-//import tdsModelPath from './assets/katana.3ds';
-// import mustangModelPath from "./assets/mustang_GT.glb";
-import mustangModelPath from "./assets/mustang_GT_no_bottom.glb";
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-//import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
-import hdrPath1 from "./assets/qwantani_moonrise_4k.hdr";
-// import hdrPath2 from "./assets/HDR_blue_nebulae-1.hdr";
-// import exrPath1 from "./assets/NightSkyHDRI009_4K-HDR.exr";
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x222222);
+let scene, camera, renderer, mixer, clock;
 
-const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
-camera.position.x = -3;
-camera.position.y = 2.2;
-camera.position.z = -2.8;
+clock = new THREE.Clock();
 
-const renderer = new THREE.WebGLRenderer( { antialias: true } );
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.75;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.physicallyCorrectLights = true;
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0x555555);
 
-const pmrem = new THREE.PMREMGenerator(renderer);
-pmrem.compileEquirectangularShader();
-//renderer.setAnimationLoop(animation);
+// Camera
+camera = new THREE.PerspectiveCamera(
+  75, window.innerWidth / window.innerHeight, 0.1, 100000
+);
+camera.position.set(0, 1.5, 3);
 
-// Load HDR environment map
-new RGBELoader()
-//new EXRLoader()
-  .setPath('./assets/') // make sure your HDRI is here
-  .load('qwantani_moonrise_4k.hdr', function(hdrTexture) {
-    const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
-    
-    scene.environment = envMap;
-    scene.background = envMap;
-
-    hdrTexture.dispose();
-    pmrem.dispose();
-  });
-
+// Renderer
+renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Lighting
-// const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-// scene.add(ambientLight);
+// Light
+const light = new THREE.DirectionalLight(0xffffff, 5);
+light.position.set(2, 2, 5);
+scene.add(light);
 
-// const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-// scene.add(hemiLight);
+const loader = new GLTFLoader();
 
-// const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-// dirLight.position.set(10, 10, 10);
-// scene.add(dirLight);
+loader.load(
+  bossaAnimacjaModelPath,
+  (gltf) => {
+    const model = gltf.scene;
+    // scaleModel(model);
+    console.log(model);
+    scene.add(model);
 
-//const tdsLoader = new TDSLoader();
+    //
+    model.traverse((obj) => {
+      //console.log(obj);
+    if (obj.isMesh && obj.morphTargetInfluences) {
+      // Set morph to 50%
+      // console.log(obj);
+      //obj.morphTargetInfluences[0] = 0.5; 
+    }
+  });
+    //
 
-// let loadedModel = null;
+    // Set up animation mixer
+    mixer = new THREE.AnimationMixer(model);
 
-// tdsLoader.load(tdsModelPath, function (object) {
-//     // Scale or position the model if needed
-// 	loadedModel = object;
-// 	console.log(object)
-//     object.scale.set(0.01, 0.01, 0.01); // Adjust scaling for large 3ds models
+    console.log(gltf.animations);
 
-// 	object.traverse(child => {
-// 		if (child.isMesh) {
-// 		  child.material = new THREE.MeshNormalMaterial(); // For debug visibility
-// 		}
-// 	});
+    // Play all animations (you can pick one instead)
+    gltf.animations.forEach((clip) => {
+      const action = mixer.clipAction(clip);
+      action.play();
+    });
+  },
+  undefined,
+  (error) => {
+    console.error('Error loading GLB:', error);
+  }
+);
 
-//     scene.add(object);
-// });
-const gltfLoader = new GLTFLoader()
-gltfLoader.load(mustangModelPath, function(object) {
-	// loadedModel = object;
-	//object.scale.set(0.01, 0.01, 0.01); // Adjust scaling for large 3ds models
-
-	scene.add(object.scene);
-
-	const overlay = document.getElementById('loader-overlay');
-  	overlay.classList.add('fade-out');
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
+controls.target.set(10, 10, 10);
 
 function animate() {
-	requestAnimationFrame(animate);
-	controls.update();
-	renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  if (mixer) mixer.update(delta);
+
+  renderer.render(scene, camera);
+  controls.update();
 }
+
+function scaleModel(model) {
+  // Compute bounding box
+  const box = new THREE.Box3().setFromObject(model);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+
+  // Center the model
+  model.position.sub(center);
+
+  // Scale the model to fit into view
+  const maxDimension = Math.max(size.x, size.y, size.z);
+  const scaleFactor = 100 / maxDimension; // Adjust 2 for how "big" you want it
+  model.scale.setScalar(scaleFactor);
+}
+
+
+
 
 animate();
-
-window.addEventListener('resize', () => {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// const geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-// const material = new THREE.MeshNormalMaterial();
-
-// const mesh = new THREE.Mesh( geometry, material );
-// scene.add( mesh );
-
-function animation( time ) {
-	// if (loadedModel) {
-	// 	loadedModel.rotation.x = time / 2000;
-	// 	loadedModel.rotation.y = time / 1000;
-	// }
-
-	// mesh.rotation.x = time / 2000;
-	// mesh.rotation.y = time / 1000;
-
-	renderer.render(scene, camera);
-}
