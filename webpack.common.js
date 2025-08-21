@@ -14,6 +14,10 @@ module.exports = {
                 type: 'asset/resource',
             },
             {
+                test: /\.png$/,
+                type: 'asset/resource',
+            },
+            {
                 test: /\.glb$/,
                 type: 'asset/resource',
             },

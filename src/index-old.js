@@ -6,8 +6,8 @@ import { PMREMGenerator } from 'three';
 import "./css/index.css";
 //import tdsModelPath from './assets/katana.3ds';
 // import mustangModelPath from "./assets/mustang_GT.glb";
-import mustangModelPath from "./assets/mustang_GT_no_bottom.glb";
-import bossaAnimacjaModelPath from "./assets/BOSSA_ANIMACJA.glb";
+//import mustangModelPath from "./assets/mustang_GT_no_bottom.glb";
+// import bossaAnimacjaModelPath from "./assets/BOSSA_ANIMACJA.glb";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 //import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import hdrPath1 from "./assets/qwantani_moonrise_4k.hdr";
@@ -79,15 +79,15 @@ document.body.appendChild(renderer.domElement);
 //     scene.add(object);
 // });
 const gltfLoader = new GLTFLoader()
-gltfLoader.load(bossaAnimacjaModelPath, function(object) {
-	// loadedModel = object;
-	//object.scale.set(0.01, 0.01, 0.01); // Adjust scaling for large 3ds models
+// gltfLoader.load(bossaAnimacjaModelPath, function(object) {
+// 	// loadedModel = object;
+// 	//object.scale.set(0.01, 0.01, 0.01); // Adjust scaling for large 3ds models
 
-	scene.add(object.scene);
+// 	scene.add(object.scene);
 
-	const overlay = document.getElementById('loader-overlay');
-  	overlay.classList.add('fade-out');
-});
+// 	const overlay = document.getElementById('loader-overlay');
+//   	overlay.classList.add('fade-out');
+// });
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
