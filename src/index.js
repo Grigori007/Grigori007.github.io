@@ -18,7 +18,6 @@ switchEl.checked = toggleAnimation;
 switchEl.addEventListener("change", () => {
     toggleAnimation = switchEl.checked;
     localStorage.setItem("toggleAnimation", toggleAnimation);
-    console.log("toggleAnimation:", toggleAnimation);
     location.reload();
 });
 

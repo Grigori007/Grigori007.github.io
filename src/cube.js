@@ -1,43 +1,52 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cubeModelPath from "./assets/kostka.glb";
-import bakeRoughMirrorTexture from "./assets/textures/bake_rough_mirror_1.png";
+// import bakeRoughMirrorTexture from "./assets/textures/bake_rough_mirror_1.png";
+import goldMirroredTexture from "./assets/textures/bake_specColor_mirror.png";
 import { loadTexture } from "./textureLoader";
 import { initOrbitControls } from "./orbitControls";
 import { initRotationByMouseDragging } from "./dragRotation";
 
-export function initCubeScene(renderWithAnimation) {
+export function initCubeScene(renderWithAnimation, showLightVectors = false) {
     // Clock
     const clock = new THREE.Clock();
 
     // Scene
     const scene = new THREE.Scene();
-    // scene.background = new THREE.Color(0x04053b);
     scene.background = new THREE.Color(0x000000)
 
     // Camera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-    // camera.position.set(4, 0, 3);
     camera.position.set(2, 0, 1);
+    //camera.position.set(2, 0, 0);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    // renderer.setPixelRatio(window.devicePixelRatio); // important for high-DPI screens
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     // Attach renderer to HTML document
     document.body.appendChild(renderer.domElement);
 
-    // Lights
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 20);
-    
-    const light = new THREE.DirectionalLight(0xffffff, 3);
-    light.position.set(20, 20, 5);
+    // Lights 
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    const light2 = new THREE.DirectionalLight(0xffffff, 1);
 
-    // Attach light to scene
-    // scene.add(ambientLight);
+    // light.position.set(20, 20, 5);
+
+    light.position.set(5, 5, 10);
+    light2.position.set(5, 5, -5);
+
+    // Attach light to the scene
     scene.add(light);
-    
+    scene.add(light2);
+
+    if (showLightVectors) {
+        const lightHelper = new THREE.DirectionalLightHelper(light, 5);
+        const light2Helper = new THREE.DirectionalLightHelper(light2, 5);
+
+        scene.add(lightHelper);
+        scene.add(light2Helper);
+    }
 
     // GLB/GLTF loader
     const loader = new GLTFLoader();
@@ -51,7 +60,7 @@ export function initCubeScene(renderWithAnimation) {
 
             centerModelAtOrigin(model);
 
-            loadTexture(bakeRoughMirrorTexture, model, 1, 0.5, null);
+            loadTexture(goldMirroredTexture, model, 1, 0.5, null);
 
             // Add model to scene
             scene.add(model);
@@ -65,9 +74,9 @@ export function initCubeScene(renderWithAnimation) {
     );
 
     window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
     // Controls
@@ -78,6 +87,8 @@ export function initCubeScene(renderWithAnimation) {
         const center = new THREE.Vector3();
         box.getCenter(center);
         model.position.sub(center); // Moving model to (0, 0, 0)
+
+        // Adjusting initial position
         model.rotation.x = - 4.5 * Math.PI;
         model.rotation.y = - 1 * Math.PI;
         model.rotation.z =  - 0.5 * Math.PI;
