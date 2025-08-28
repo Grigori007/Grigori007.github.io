@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import cubeModelPath from "./assets/kostka.glb";
-// import bakeRoughMirrorTexture from "./assets/textures/bake_rough_mirror_1.png";
-import goldMirroredTexture from "./assets/textures/bake_specColor_mirror.png";
+import goldMirroredTexture from "./assets/textures/bake_specColor_mirror_wiekszy_napis.png";
+import bakeRoughGoldTexture from "./assets/textures/bake_rough_gold.png";
 import { loadTexture } from "./textureLoader";
 import { initOrbitControls } from "./orbitControls";
 import { initRotationByMouseDragging } from "./dragRotation";
@@ -28,21 +28,26 @@ export function initCubeScene(renderWithAnimation, showLightVectors = false) {
     document.body.appendChild(renderer.domElement);
 
     // Lights 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    const light2 = new THREE.DirectionalLight(0xffffff, 1);
+    const hemishpereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 0.1);
+    const light2 = new THREE.DirectionalLight(0xffffff, 0.1);
 
     // light.position.set(20, 20, 5);
 
+    hemishpereLight.position.set(0, 20, 0);
     light.position.set(5, 5, 10);
     light2.position.set(5, 5, -5);
 
     // Attach light to the scene
+    scene.add(hemishpereLight);
     scene.add(light);
     scene.add(light2);
+    scene.add(ambientLight);
 
     if (showLightVectors) {
-        const lightHelper = new THREE.DirectionalLightHelper(light, 5);
-        const light2Helper = new THREE.DirectionalLightHelper(light2, 5);
+        const lightHelper = new THREE.DirectionalLightHelper(light, 0.1);
+        const light2Helper = new THREE.DirectionalLightHelper(light2, 0.1);
 
         scene.add(lightHelper);
         scene.add(light2Helper);
@@ -60,7 +65,7 @@ export function initCubeScene(renderWithAnimation, showLightVectors = false) {
 
             centerModelAtOrigin(model);
 
-            loadTexture(goldMirroredTexture, model, 1, 0.5, null);
+            loadTexture(goldMirroredTexture, bakeRoughGoldTexture, model, 0.95, 0.99, null);
 
             // Add model to scene
             scene.add(model);
