@@ -1,13 +1,15 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import cubeModelPath from "./assets/kostka.glb";
 import goldMirroredTexture from "./assets/textures/bake_specColor_mirror_wiekszy_napis.png";
 import bakeRoughGoldTexture from "./assets/textures/bake_rough_gold.png";
+import moonLabHdr from "./assets/textures/moon_lab_1k.hdr";
 import { loadTexture } from "./textureLoader";
 import { initOrbitControls } from "./orbitControls";
 import { initRotationByMouseDragging } from "./dragRotation";
 
-export function initCubeScene(renderWithAnimation, showLightVectors = false) {
+export function initCubeScene(renderWithAnimation, renderNonEnvMapLights = false, showLightVectors = false) {
     // Clock
     const clock = new THREE.Clock();
 
@@ -18,39 +20,56 @@ export function initCubeScene(renderWithAnimation, showLightVectors = false) {
     // Camera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
     camera.position.set(2, 0, 1);
-    //camera.position.set(2, 0, 0);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
+    // HDR
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+
+    // Load HDR environment map
+    new RGBELoader()
+    //new EXRLoader()
+    .setPath('./assets/') // make sure your HDRI is here
+    .load('moon_lab_1k.hdr', function(hdrTexture) {
+        const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
+        
+        scene.environment = envMap;
+        // scene.background = envMap;
+
+        hdrTexture.dispose();
+        pmrem.dispose();
+    });
+
     // Attach renderer to HTML document
     document.body.appendChild(renderer.domElement);
 
-    // Lights 
-    const hemishpereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    const light = new THREE.DirectionalLight(0xffffff, 0.1);
-    const light2 = new THREE.DirectionalLight(0xffffff, 0.1);
+    if (renderNonEnvMapLights) {
+        // Lights 
+        const hemishpereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+        const light = new THREE.DirectionalLight(0xffffff, 0.1);
+        const light2 = new THREE.DirectionalLight(0xffffff, 0.1);
 
-    // light.position.set(20, 20, 5);
+        hemishpereLight.position.set(0, 20, 0);
+        light.position.set(5, 5, 10);
+        light2.position.set(5, 5, -5);
 
-    hemishpereLight.position.set(0, 20, 0);
-    light.position.set(5, 5, 10);
-    light2.position.set(5, 5, -5);
+        // Attach light to the scene
+        scene.add(hemishpereLight);
+        scene.add(light);
+        scene.add(light2);
+        scene.add(ambientLight);
 
-    // Attach light to the scene
-    scene.add(hemishpereLight);
-    scene.add(light);
-    scene.add(light2);
-    scene.add(ambientLight);
+        if (showLightVectors) {
+            const lightHelper = new THREE.DirectionalLightHelper(light, 0.1);
+            const light2Helper = new THREE.DirectionalLightHelper(light2, 0.1);
 
-    if (showLightVectors) {
-        const lightHelper = new THREE.DirectionalLightHelper(light, 0.1);
-        const light2Helper = new THREE.DirectionalLightHelper(light2, 0.1);
-
-        scene.add(lightHelper);
-        scene.add(light2Helper);
+            scene.add(lightHelper);
+            scene.add(light2Helper);
+        }
     }
 
     // GLB/GLTF loader
@@ -65,7 +84,7 @@ export function initCubeScene(renderWithAnimation, showLightVectors = false) {
 
             centerModelAtOrigin(model);
 
-            loadTexture(goldMirroredTexture, bakeRoughGoldTexture, model, 0.95, 0.99, null);
+            loadTexture(goldMirroredTexture, bakeRoughGoldTexture, model, 0.99, 0.45, null);
 
             // Add model to scene
             scene.add(model);
