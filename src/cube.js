@@ -1,24 +1,22 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-import cubeModelPath from "./assets/kostka.glb";
-import goldMirroredTexture from "./assets/textures/bake_specColor_mirror_wiekszy_napis.png";
-import bakeRoughGoldTexture from "./assets/textures/bake_rough_gold.png";
-import moonLabHdr from "./assets/textures/moon_lab_1k.hdr";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { loadTexture } from "./textureLoader";
 import { initOrbitControls } from "./orbitControls";
 import { initRotationByMouseDragging } from "./dragRotation";
 
-export function initCubeScene(renderWithAnimation, renderNonEnvMapLights = false, showLightVectors = false) {
+export function initCubeScene(modelPath, specularTexturePath, roughTexture, hdrPath, renderWithAnimation, renderNonEnvMapLights = false, showLightVectors = false) {
     // Clock
     const clock = new THREE.Clock();
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000)
+    scene.background = new THREE.Color(0x192134)
 
     // Camera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+    // camera.position.set(2, 0, 1);
     camera.position.set(2, 0, 1);
 
     // Renderer
@@ -29,15 +27,14 @@ export function initCubeScene(renderWithAnimation, renderNonEnvMapLights = false
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
 
-    // Load HDR environment map
-    new RGBELoader()
-    //new EXRLoader()
-    .setPath('./assets/') // make sure your HDRI is here
-    .load('moon_lab_1k.hdr', function(hdrTexture) {
+        // Load HDR environment map
+    const exrLoader = new EXRLoader();
+    //const rgbeLoader = new RGBELoader();
+    exrLoader.load(hdrPath, function(hdrTexture) {
         const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
         
         scene.environment = envMap;
-        // scene.background = envMap;
+        //scene.background = envMap;
 
         hdrTexture.dispose();
         pmrem.dispose();
@@ -78,13 +75,13 @@ export function initCubeScene(renderWithAnimation, renderNonEnvMapLights = false
     let velocityRef = null;
     let model = null;
     let dampingRef = 1;
-    loader.load(cubeModelPath,
+    loader.load(modelPath,
         (gltf) => {
             model = gltf.scene;
 
             centerModelAtOrigin(model);
 
-            loadTexture(goldMirroredTexture, bakeRoughGoldTexture, model, 0.99, 0.45, null);
+            loadTexture(specularTexturePath, roughTexture, model, 0.99, 0.7, null);
 
             // Add model to scene
             scene.add(model);
@@ -116,6 +113,10 @@ export function initCubeScene(renderWithAnimation, renderNonEnvMapLights = false
         model.rotation.x = - 4.5 * Math.PI;
         model.rotation.y = - 1 * Math.PI;
         model.rotation.z =  - 0.5 * Math.PI;
+
+        // model.rotation.x = - 4.5 * Math.PI;
+        // model.rotation.y = - 1 * Math.PI;
+        // model.rotation.z =  - 2.0 * Math.PI;
     }
 
     function renderWithoutRotation() {

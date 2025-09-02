@@ -18,6 +18,10 @@ module.exports = {
                 type: 'asset/resource',
             },
             {
+                test: /\.jpg$/,
+                type: 'asset/resource',
+            },
+            {
                 test: /\.glb$/,
                 type: 'asset/resource',
             },
