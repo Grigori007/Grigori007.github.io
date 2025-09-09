@@ -1,12 +1,10 @@
-import { TextureLoader, MeshStandardMaterial, MeshBasicMaterial, Mesh, Vector3, Euler, PlaneGeometry } from 'three';
-import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
+import { TextureLoader, MeshStandardMaterial, MeshBasicMaterial, Mesh, PlaneGeometry } from 'three';
 
 const textureLoader = new TextureLoader();
 
 export function loadTexture(mapTexturePath, roughTexturePath, model, metalness, roughness) {
     const customMaterial = new MeshStandardMaterial({
         map: textureLoader.load(mapTexturePath),
-        //map: textureLoader.load('https://threejsfundamentals.org/threejs/resources/images/checker.png'),
         metalness: metalness,
         roughness: roughness,
         flatShading: false
@@ -17,10 +15,6 @@ export function loadTexture(mapTexturePath, roughTexturePath, model, metalness, 
     }
 
     customMaterial.needsUpdate = true;
-
-    model.traverse((child) => {
-        console.log(child);
-    });
 
     model.traverse((child) => {
         if (child.isMesh) {

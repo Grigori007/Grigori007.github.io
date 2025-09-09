@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { loadTexture, loadLogo } from "./textureLoader";
@@ -9,6 +8,7 @@ import { initRotationByMouseDragging } from "./dragRotation";
 let scene = null;
 let camera = null;
 let renderer = null;
+let enableAnimationManually = false;
 
 const ObjectName = "CUBE";
 
@@ -30,20 +30,22 @@ export function initCubeScene(sceneConfig) {
         roughTexturePath,
         logoPath,
         hdrPath,
-        toggleAnimation,
         metalness,
         roughness,
-        backgroundColor
+        backgroundColor,
+        enableAnimation,
+        showAnimationControls
     } = sceneConfig;
+
+    if (!enableAnimation && showAnimationControls) {
+        renderUIForTogglingAnimation();
+    }
 
     // Clock
     const clock = new THREE.Clock();
 
     // Background
     scene.background = new THREE.Color(backgroundColor);
-
-    // Camera
-    // camera.position.set(2, 0, 1);
 
     // HDR
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -52,6 +54,7 @@ export function initCubeScene(sceneConfig) {
     // Load HDR environment map
     const exrLoader = new EXRLoader();
     exrLoader.load(hdrPath, function(hdrTexture) {
+        hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
         const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
         
         scene.environment = envMap;
@@ -61,14 +64,9 @@ export function initCubeScene(sceneConfig) {
         pmrem.dispose();
     });
 
-    // GLB/GLTF loader
-    // const loader = new GLTFLoader();
-
-    let velocityRef = null;
-    let model = null;
-    let dampingRef = 1;
-
-    model = new THREE.Mesh(new RoundedBoxGeometry(
+    //let velocityRef = null;
+    //let dampingRef = 1;
+    let model = new THREE.Mesh(new RoundedBoxGeometry(
         1,   // width
         1,   // height
         1,   // depth
@@ -85,37 +83,8 @@ export function initCubeScene(sceneConfig) {
     loadLogo(model, logoPath);
 
     const { velocity, damping } = initRotationByMouseDragging(renderer, model);
-    dampingRef = damping;
-    velocityRef = velocity;
-
-    // loader.load(cubeModelPath,
-    //     (gltf) => {
-    //         console.log(gltf);
-    //         //model = gltf.scene;
-    //         //model = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
-    //         model = new THREE.Mesh(new RoundedBoxGeometry(
-    //             1,   // width
-    //             1,   // height
-    //             1,   // depth
-    //             5,   // segments per edge (higher = smoother corners)
-    //             0.04  // corner radius
-    //         )); 
-
-    //         centerModelAtOrigin(model);
-    //         loadTexture(mainTexturePath, roughTexturePath, model, metalness, roughness);
-
-    //         model.name = ObjectName;
-    //         scene.add(model);
-
-    //         loadGif(model, gifPath);
-
-    //         const { velocity, damping } = initRotationByMouseDragging(renderer, model);
-    //         dampingRef = damping;
-    //         velocityRef = velocity;
-    //     },
-    //     undefined,
-    //     (error) => console.log(`Error while loading .glb file: ${error}`)
-    // );
+    //dampingRef = damping;
+    //velocityRef = velocity;
 
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -167,35 +136,13 @@ export function initCubeScene(sceneConfig) {
         renderer.render(scene, camera);
     }
 
-    if (toggleAnimation) {
+    if (enableAnimationManually || enableAnimation) {
         renderWithRotation();
     }
     else {
         //renderWithMouseDragging();
         renderWithoutRotation();
     }
-}
-
-export function initAnimationToggleWidget() {
-    let toggleAnimation = localStorage.getItem("toggleAnimation");
-
-    if (toggleAnimation === null) {
-        toggleAnimation = "false";
-        localStorage.setItem("toggleAnimation", toggleAnimation);
-    }
-
-    toggleAnimation = (toggleAnimation === "true");
-
-    const switchEl = document.getElementById("animationSwitch");
-    switchEl.checked = toggleAnimation;
-
-    switchEl.addEventListener("change", () => {
-        toggleAnimation = switchEl.checked;
-        localStorage.setItem("toggleAnimation", toggleAnimation);
-        location.reload();
-    });
-
-    return toggleAnimation;
 }
 
 export function disposeModels() {
@@ -238,4 +185,45 @@ export function disposeWholeScene() {
     scene = null;
     camera = null;
     renderer = null;
+}
+
+function renderUIForTogglingAnimation() {
+    const span = document.createElement("span");
+    span.className = "slider";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.id = "animationSwitch";
+
+    input.checked = (localStorage.getItem("toggleAnimation") === "true");
+
+    input.addEventListener("change", () => {
+        const checked = input.checked;
+        localStorage.setItem("toggleAnimation", checked);
+        location.reload();
+    });
+
+    const label = document.createElement("label");
+    label.className = "switch";
+
+    const h2 = document.createElement("h2");
+    h2.innerText = "Animation Toggle";
+
+    const div = document.createElement("div");
+    div.id = "ui";
+
+    label.appendChild(input);
+    label.appendChild(span);
+    div.appendChild(h2);
+    div.appendChild(label);
+    document.body.appendChild(div);
+
+    let toggleAnimation = localStorage.getItem("toggleAnimation");
+
+    if (toggleAnimation === null) {
+        toggleAnimation = "false";
+        localStorage.setItem("toggleAnimation", toggleAnimation);
+    }
+
+    enableAnimationManually = (toggleAnimation === "true");
 }
