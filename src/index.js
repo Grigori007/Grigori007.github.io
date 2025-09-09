@@ -1,40 +1,34 @@
-import { initCubeScene } from "./cube";
-import cubeModelPath from "./assets/kostka.glb";
-import goldWithCaptionTexture from "./assets/textures/v2/bake_specColor_mirror_wiekszy_napis_small.png";
-//import goldWithCaptionTexture from "./assets/textures/bake_specColor_mirror_wiekszy_napis.png";
-// import roughTexture from "./assets/textures/v2/bake_rough_gold_small.png";
-//import roughTexture from "./assets/textures/v2/bake_rough_gold.jpg";
+import { initBaseScene, initCubeScene, initAnimationToggleWidget, disposeModels } from "./cube";
+import mainTexturePath from "./assets/textures/v3/simple_gold_texture.png";
+import greenMarbleTexturePath from "./assets/textures/v3/green_marble_simple_texture.png";
+import roughTexturePath from "./assets/textures/v3/simple_rough_texture.png";
+import logoPath from "./assets/textures/v3/Zloto.png";
 
-//import roughTexture from "./assets/textures/bake_rough_gold.png";
-//import roughTexture from "./assets/textures/v2/bake_rough_gold_jasne.jpg"; // to moze byc w razie czego na jutro
-//import roughTexture from "./assets/textures/v2/bake_rough_gold-dark.png";
-//import roughTexture from "./assets/textures/v2/bake_rough_gold-light_2.png";
-//import roughTexture from "./assets/textures/v2/bake_rough_gold-dark_2.png";
-import roughTexture from "./assets/textures/v2/bake_rough_gold-gray.png";
-//import hdr from "./assets/textures/moon_lab_1k.hdr";
-//import hdr from "./assets/textures/v2/GSG_PRO_STUDIOS_METAL_040_sm_obrot.exr";
+const toggleAnimation = initAnimationToggleWidget();
 
-import hdr from "./assets/textures/v2/GSG_PRO_STUDIOS_METAL_040_sm(2).exr";
-//import "./css/index.css"
+const CubeConfigs = {
+    // Gold: {
+    //     cubeModelPath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip2/src/assets/kostka.glb",
+    //     mainTexturePath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip2/src/assets/textures/v2/bake_specColor_mirror_wiekszy_napis_small.png",
+    //     gifPath: "todo",
+    //     roughTexturePath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip2/src/assets/textures/v2/bake_rough_gold-gray.png",
+    //     hdrPath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip2/src/assets/textures/v2/GSG_PRO_STUDIOS_METAL_040_sm(2).exr",
+    //     toggleAnimation: toggleAnimation,
+    //     metalness: 0.99,
+    //     roughness: 0.7,
+    //     backgroundColor: 0x192134
+    // }
+    Gold: {
+        mainTexturePath: mainTexturePath,
+        logoPath: logoPath,
+        roughTexturePath: roughTexturePath,
+        hdrPath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip2/src/assets/textures/v2/GSG_PRO_STUDIOS_METAL_040_sm(2).exr",
+        toggleAnimation: toggleAnimation,
+        metalness: 0.99,
+        roughness: 0.7,
+        backgroundColor: 0x192134
+    }
+};
 
-// --- Init localStorage value ---
-let toggleAnimation = localStorage.getItem("toggleAnimation");
-
-if (toggleAnimation === null) {
-    toggleAnimation = "false";
-    localStorage.setItem("toggleAnimation", toggleAnimation);
-}
-toggleAnimation = (toggleAnimation === "true");
-
-// --- Sync UI with stored value ---
-const switchEl = document.getElementById("animationSwitch");
-switchEl.checked = toggleAnimation;
-
-// --- Update storage on toggle ---
-switchEl.addEventListener("change", () => {
-    toggleAnimation = switchEl.checked;
-    localStorage.setItem("toggleAnimation", toggleAnimation);
-    location.reload();
-});
-
-initCubeScene(cubeModelPath, goldWithCaptionTexture, roughTexture, hdr, toggleAnimation);
+initBaseScene();
+initCubeScene(CubeConfigs.Gold);

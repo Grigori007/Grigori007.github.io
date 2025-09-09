@@ -9,3 +9,11 @@ export function initOrbitControls(renderer, camera) {
     controls.target.set(0, 0, 0);
     controls.update();
 }
+
+export function centerModel(renderer, camera) {
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.target.set(0, 0, 0);
+    controls.update();
+}

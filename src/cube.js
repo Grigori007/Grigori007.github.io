@@ -1,35 +1,56 @@
 import * as THREE from 'three';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
-import { loadTexture } from "./textureLoader";
-import { initOrbitControls } from "./orbitControls";
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { loadTexture, loadLogo } from "./textureLoader";
+import { centerModel } from "./orbitControls";
 import { initRotationByMouseDragging } from "./dragRotation";
 
-export function initCubeScene(modelPath, specularTexturePath, roughTexture, hdrPath, renderWithAnimation, renderNonEnvMapLights = false, showLightVectors = false) {
+let scene = null;
+let camera = null;
+let renderer = null;
+
+const ObjectName = "CUBE";
+
+export function initBaseScene() {
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+    camera.position.set(2, 0, 1);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    document.body.appendChild(renderer.domElement);
+}
+
+export function initCubeScene(sceneConfig) {
+    const {
+        mainTexturePath,
+        roughTexturePath,
+        logoPath,
+        hdrPath,
+        toggleAnimation,
+        metalness,
+        roughness,
+        backgroundColor
+    } = sceneConfig;
+
     // Clock
     const clock = new THREE.Clock();
 
-    // Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x192134)
+    // Background
+    scene.background = new THREE.Color(backgroundColor);
 
     // Camera
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
     // camera.position.set(2, 0, 1);
-    camera.position.set(2, 0, 1);
-
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
 
     // HDR
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
 
-        // Load HDR environment map
+    // Load HDR environment map
     const exrLoader = new EXRLoader();
-    //const rgbeLoader = new RGBELoader();
     exrLoader.load(hdrPath, function(hdrTexture) {
         const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
         
@@ -40,59 +61,61 @@ export function initCubeScene(modelPath, specularTexturePath, roughTexture, hdrP
         pmrem.dispose();
     });
 
-    // Attach renderer to HTML document
-    document.body.appendChild(renderer.domElement);
-
-    if (renderNonEnvMapLights) {
-        // Lights 
-        const hemishpereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-        const light = new THREE.DirectionalLight(0xffffff, 0.1);
-        const light2 = new THREE.DirectionalLight(0xffffff, 0.1);
-
-        hemishpereLight.position.set(0, 20, 0);
-        light.position.set(5, 5, 10);
-        light2.position.set(5, 5, -5);
-
-        // Attach light to the scene
-        scene.add(hemishpereLight);
-        scene.add(light);
-        scene.add(light2);
-        scene.add(ambientLight);
-
-        if (showLightVectors) {
-            const lightHelper = new THREE.DirectionalLightHelper(light, 0.1);
-            const light2Helper = new THREE.DirectionalLightHelper(light2, 0.1);
-
-            scene.add(lightHelper);
-            scene.add(light2Helper);
-        }
-    }
-
     // GLB/GLTF loader
-    const loader = new GLTFLoader();
+    // const loader = new GLTFLoader();
 
     let velocityRef = null;
     let model = null;
     let dampingRef = 1;
-    loader.load(modelPath,
-        (gltf) => {
-            model = gltf.scene;
 
-            centerModelAtOrigin(model);
+    model = new THREE.Mesh(new RoundedBoxGeometry(
+        1,   // width
+        1,   // height
+        1,   // depth
+        5,   // segments per edge (higher = smoother corners)
+        0.04  // corner radius
+    )); 
 
-            loadTexture(specularTexturePath, roughTexture, model, 0.99, 0.7, null);
+    centerModelAtOrigin(model);
+    loadTexture(mainTexturePath, roughTexturePath, model, metalness, roughness);
 
-            // Add model to scene
-            scene.add(model);
+    model.name = ObjectName;
+    scene.add(model);
 
-            const { velocity, damping } = initRotationByMouseDragging(renderer, model);
-            dampingRef = damping;
-            velocityRef = velocity;
-        },
-        undefined,
-        (error) => console.log(`Error while loading .glb file: ${error}`)
-    );
+    loadLogo(model, logoPath);
+
+    const { velocity, damping } = initRotationByMouseDragging(renderer, model);
+    dampingRef = damping;
+    velocityRef = velocity;
+
+    // loader.load(cubeModelPath,
+    //     (gltf) => {
+    //         console.log(gltf);
+    //         //model = gltf.scene;
+    //         //model = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+    //         model = new THREE.Mesh(new RoundedBoxGeometry(
+    //             1,   // width
+    //             1,   // height
+    //             1,   // depth
+    //             5,   // segments per edge (higher = smoother corners)
+    //             0.04  // corner radius
+    //         )); 
+
+    //         centerModelAtOrigin(model);
+    //         loadTexture(mainTexturePath, roughTexturePath, model, metalness, roughness);
+
+    //         model.name = ObjectName;
+    //         scene.add(model);
+
+    //         loadGif(model, gifPath);
+
+    //         const { velocity, damping } = initRotationByMouseDragging(renderer, model);
+    //         dampingRef = damping;
+    //         velocityRef = velocity;
+    //     },
+    //     undefined,
+    //     (error) => console.log(`Error while loading .glb file: ${error}`)
+    // );
 
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -100,23 +123,13 @@ export function initCubeScene(modelPath, specularTexturePath, roughTexture, hdrP
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Controls
-    initOrbitControls(renderer, camera);
-
     function centerModelAtOrigin(model) {
-        const box = new THREE.Box3().setFromObject(model);
-        const center = new THREE.Vector3();
-        box.getCenter(center);
-        model.position.sub(center); // Moving model to (0, 0, 0)
+        centerModel(renderer, camera);
 
         // Adjusting initial position
         model.rotation.x = - 4.5 * Math.PI;
         model.rotation.y = - 1 * Math.PI;
-        model.rotation.z =  - 0.5 * Math.PI;
-
-        // model.rotation.x = - 4.5 * Math.PI;
-        // model.rotation.y = - 1 * Math.PI;
-        // model.rotation.z =  - 2.0 * Math.PI;
+        model.rotation.z = - 0.5 * Math.PI;
     }
 
     function renderWithoutRotation() {
@@ -124,20 +137,22 @@ export function initCubeScene(modelPath, specularTexturePath, roughTexture, hdrP
         renderer.render(scene, camera);
     }
 
-    function renderWithMouseDragging() {
-        requestAnimationFrame(renderWithMouseDragging);
+    //#region Dragging with intertia @TODO
+    // function renderWithMouseDragging() {
+    //     requestAnimationFrame(renderWithMouseDragging);
 
-        if (model && velocityRef) {
-            model.rotation.z -= velocityRef.z * 0.005; // horizontal drag rotates around Y
-            model.rotation.y += velocityRef.y * 0.005; // vertical drag rotates around X
+    //     if (model && velocityRef) {
+    //         model.rotation.z -= velocityRef.z * 0.005; // horizontal drag rotates around Y
+    //         model.rotation.y += velocityRef.y * 0.005; // vertical drag rotates around X
 
-            // Apply damping (slowly reduce velocity)
-            velocityRef.z *= dampingRef;
-            velocityRef.y *= dampingRef;
-        }
+    //         // Apply damping (slowly reduce velocity)
+    //         velocityRef.z *= dampingRef;
+    //         velocityRef.y *= dampingRef;
+    //     }
 
-        renderer.render(scene, camera);
-    }
+    //     renderer.render(scene, camera);
+    // }
+    //#endregion
 
     function renderWithRotation() {
         requestAnimationFrame(renderWithRotation);
@@ -152,11 +167,75 @@ export function initCubeScene(modelPath, specularTexturePath, roughTexture, hdrP
         renderer.render(scene, camera);
     }
 
-    if (renderWithAnimation) {
+    if (toggleAnimation) {
         renderWithRotation();
     }
     else {
         //renderWithMouseDragging();
         renderWithoutRotation();
     }
+}
+
+export function initAnimationToggleWidget() {
+    let toggleAnimation = localStorage.getItem("toggleAnimation");
+
+    if (toggleAnimation === null) {
+        toggleAnimation = "false";
+        localStorage.setItem("toggleAnimation", toggleAnimation);
+    }
+
+    toggleAnimation = (toggleAnimation === "true");
+
+    const switchEl = document.getElementById("animationSwitch");
+    switchEl.checked = toggleAnimation;
+
+    switchEl.addEventListener("change", () => {
+        toggleAnimation = switchEl.checked;
+        localStorage.setItem("toggleAnimation", toggleAnimation);
+        location.reload();
+    });
+
+    return toggleAnimation;
+}
+
+export function disposeModels() {
+    const objectToRemove = scene.getObjectByName(ObjectName);
+    scene.remove(objectToRemove);
+
+    scene.traverse(child => {
+        if (child.isMesh && child.geometry) {
+            child.geometry.dispose();
+        }
+
+        if (Array.isArray(child.material)) {
+            child.material.forEach((material) => disposeMaterial(material));
+        } else if (child.material) {
+            disposeMaterial(child.material);
+        }
+    });
+
+    function disposeMaterial(material) {
+        for (const key in material) {
+            if (material[key] && material[key].isTexture) {
+                material[key].dispose();
+            }
+        }
+
+        material.dispose();
+    }
+}
+
+export function disposeWholeScene() {
+    // Clear models and materials
+    disposeModels();
+
+    // Clear scene elements
+    scene && scene.clear();
+
+    // Clear renderer
+    renderer && renderer.renderLists.dispose();
+
+    scene = null;
+    camera = null;
+    renderer = null;
 }
