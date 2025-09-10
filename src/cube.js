@@ -34,7 +34,8 @@ export function initCubeScene(sceneConfig) {
         roughness,
         backgroundColor,
         enableAnimation,
-        showAnimationControls
+        showAnimationControls,
+        rednerLogoOnBothSides
     } = sceneConfig;
 
     if (!enableAnimation && showAnimationControls) {
@@ -80,7 +81,7 @@ export function initCubeScene(sceneConfig) {
     model.name = ObjectName;
     scene.add(model);
 
-    loadLogo(model, logoPath);
+    loadLogo(model, logoPath, rednerLogoOnBothSides);
 
     const { velocity, damping } = initRotationByMouseDragging(renderer, model);
     //dampingRef = damping;

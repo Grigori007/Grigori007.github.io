@@ -10,7 +10,8 @@ const CubeConfigs = {
         roughness: 0.7,
         backgroundColor: 0x192134,
         enableAnimation: false,
-        showAnimationControls:  true
+        showAnimationControls:  true,
+        rednerLogoOnBothSides: true
     },
     Marble: {
         mainTexturePath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip3/src/assets/textures/v3/green_marble_simple_texture.png",
@@ -21,7 +22,8 @@ const CubeConfigs = {
         roughness: 0.7,
         backgroundColor: 0x192134,
         enableAnimation: false,
-        showAnimationControls:  true
+        showAnimationControls:  true,
+        rednerLogoOnBothSides: true
     }
 };
 
