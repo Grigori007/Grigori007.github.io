@@ -10,13 +10,13 @@ const exrFileTemplate = "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.githu
 export function initExrGallery() {
     const fileNameDiv = document.createElement("div");
     fileNameDiv.id = "fileNameDiv";
-    fileNameDiv.style.color = "white";
+    fileNameDiv.style.color = "black";
 
-    document.appendChild(fileNameDiv);
+    document.body.appendChild(fileNameDiv);
 
     const changeLeftButton = document.createElement("input");
     changeLeftButton.type = "button";
-    changeLeftButton.innerText = "<-";
+    changeLeftButton.value = "<- Pervious EXR";
 
     changeLeftButton.onclick = () => {
         const exrGalleryIndex = localStorage.getItem("exrGalleryIndex");
@@ -38,11 +38,11 @@ export function initExrGallery() {
         location.reload();
     }
 
-    document.appendChild(changeLeftButton);
+    document.body.appendChild(changeLeftButton);
 
     const changeRightButton = document.createElement("input");
     changeRightButton.type = "button";
-    changeRightButton.innerText = "->";
+    changeRightButton.value = "Next EXR ->";
 
     changeRightButton.onclick = () => {
         const exrGalleryIndex = localStorage.getItem("exrGalleryIndex");
@@ -64,7 +64,7 @@ export function initExrGallery() {
         location.reload();
     }
 
-    document.appendChild(changeRightButton);
+    document.body.appendChild(changeRightButton);
 }
 
 export function getExrFileName() {
@@ -81,7 +81,7 @@ export function getExrFileName() {
     const fileName = exrFileTemplate.replace("{0}", version);
 
     fileNameDiv.innerText = fileName;
-    
+
     return fileName;
 }
 

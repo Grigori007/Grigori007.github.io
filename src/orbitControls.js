@@ -12,8 +12,10 @@ export function initOrbitControls(renderer, camera) {
 
 export function centerModel(renderer, camera) {
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = false;
     controls.enableZoom = false;
     controls.enablePan = false;
+    controls.enableRotate = false;
     controls.target.set(0, 0, 0);
     controls.update();
 }

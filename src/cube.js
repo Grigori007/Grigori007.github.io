@@ -35,7 +35,9 @@ export function initCubeScene(sceneConfig) {
         backgroundColor,
         enableAnimation,
         showAnimationControls,
-        rednerLogoOnBothSides
+        rednerLogoOnBothSides,
+        envLightXRotationInPiRadians,
+        envLightYRotationInPiRadians
     } = sceneConfig;
 
     if (!enableAnimation && showAnimationControls) {
@@ -50,14 +52,32 @@ export function initCubeScene(sceneConfig) {
 
     // HDR
     const pmrem = new THREE.PMREMGenerator(renderer);
-    pmrem.compileEquirectangularShader();
+    //pmrem.compileEquirectangularShader();
 
     // Load HDR environment map
     const exrLoader = new EXRLoader();
     exrLoader.load(hdrPath, function(hdrTexture) {
         hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
-        const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
-        
+
+        // Background mesh
+        const backgroundGeo = new THREE.SphereGeometry(100, 64, 64);
+        backgroundGeo.scale(-1, 1, 1); // flip normals inward
+        const backgroundMat = new THREE.MeshBasicMaterial({ map: hdrTexture });
+        const backgroundMesh = new THREE.Mesh(backgroundGeo, backgroundMat);
+
+        // Rotate the background + lightning
+        backgroundMesh.rotation.x = envLightXRotationInPiRadians * Math.PI;
+        backgroundMesh.rotation.y = envLightYRotationInPiRadians * Math.PI;
+        scene.add(backgroundMesh);
+
+        // Lightning environment (PMREM)
+        const tmpScene = new THREE.Scene();
+        tmpScene.add(backgroundMesh.clone()); // clone with the same rotation
+        const envMap = pmrem.fromScene(tmpScene).texture;
+
+        backgroundMesh.removeFromParent();
+
+        //const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
         scene.environment = envMap;
         //scene.background = envMap;
 
