@@ -9,7 +9,7 @@ const CubeConfigs = {
         mainTexturePath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip3/src/assets/textures/v3/simple_gold_texture.png",
         logoPath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip3/src/assets/textures/v3/Zloto.png",
         roughTexturePath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip3/src/assets/textures/v3/simple_rough_texture.png",
-        hdrPath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip3/src/assets/textures/v2/GSG_PRO_STUDIOS_METAL_040_v2_sm.exr",
+        hdrPath: "https://cdn.jsdelivr.net/gh/Grigori007/Grigori007.github.io@wip3/src/assets/textures/exr/GSG_PRO_STUDIOS_METAL_040_v2_sm.exr",
         metalness: 0.99,
         roughness: 0.7,
         backgroundColor: 0x192134,
